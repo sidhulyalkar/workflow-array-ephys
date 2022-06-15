@@ -4,11 +4,7 @@ __all__ = ['dj_config', 'pipeline', 'test_data', 'subjects_csv', 'ingest_subject
            'sessions_csv', 'ingest_sessions', 'testdata_paths', 'kilosort_paramset',
            'ephys_recordings', 'clustering_tasks', 'clustering', 'curations']
 
-from . import (dj_config, pipeline, test_data,
-               subjects_csv, ingest_subjects,
-               sessions_csv, ingest_sessions,
-               testdata_paths, kilosort_paramset,
-               ephys_recordings, clustering_tasks, clustering, curations)
+from . import *
 
 
 def test_ephys_recording_populate(pipeline, ephys_recordings):
@@ -93,40 +89,40 @@ def test_clustering_populate(clustering, pipeline):
     assert len(ephys.Clustering()) == 13
 
 
-def test_curated_clustering_populate(curations, pipeline, testdata_paths):
-    """Populate ephys.CuratedClustering with multiple recordings"""
-    ephys = pipeline['ephys']
+# def test_curated_clustering_populate(curations, pipeline, testdata_paths):
+#     """Populate ephys.CuratedClustering with multiple recordings"""
+#     ephys = pipeline['ephys']
 
-    rel_path = testdata_paths['npx3A-p1-ks']
-    curation_key = (ephys.Curation & f'curation_output_dir LIKE "%{rel_path}"'
-                    ).fetch1('KEY')
-    ephys.CuratedClustering.populate(curation_key)
-    assert len(ephys.CuratedClustering.Unit & curation_key
-               & 'cluster_quality_label = "good"') == 76
+#     rel_path = testdata_paths['npx3A-p1-ks']
+#     curation_key = (ephys.Curation & f'curation_output_dir LIKE "%{rel_path}"'
+#                     ).fetch1('KEY')
+#     ephys.CuratedClustering.populate(curation_key)
+#     assert len(ephys.CuratedClustering.Unit & curation_key
+#                & 'cluster_quality_label = "good"') == 76
 
-    rel_path = testdata_paths['oe_npx3B-ks']
-    curation_key = (ephys.Curation & f'curation_output_dir LIKE "%{rel_path}"'
-                    ).fetch1('KEY')
-    ephys.CuratedClustering.populate(curation_key)
-    assert len(ephys.CuratedClustering.Unit & curation_key
-               & 'cluster_quality_label = "good"') == 68
+#     rel_path = testdata_paths['oe_npx3B-ks']
+#     curation_key = (ephys.Curation & f'curation_output_dir LIKE "%{rel_path}"'
+#                     ).fetch1('KEY')
+#     ephys.CuratedClustering.populate(curation_key)
+#     assert len(ephys.CuratedClustering.Unit & curation_key
+#                & 'cluster_quality_label = "good"') == 68
 
-    rel_path = testdata_paths['npx3B-p1-ks']
-    curation_key = (ephys.Curation & f'curation_output_dir LIKE "%{rel_path}"'
-                    ).fetch1('KEY')
-    ephys.CuratedClustering.populate(curation_key)
-    assert len(ephys.CuratedClustering.Unit & curation_key
-               & 'cluster_quality_label = "good"') == 55
+#     rel_path = testdata_paths['npx3B-p1-ks']
+#     curation_key = (ephys.Curation & f'curation_output_dir LIKE "%{rel_path}"'
+#                     ).fetch1('KEY')
+#     ephys.CuratedClustering.populate(curation_key)
+#     assert len(ephys.CuratedClustering.Unit & curation_key
+#                & 'cluster_quality_label = "good"') == 55
 
 
-def test_waveform_populate_npx3B_OpenEphys(curations, pipeline, testdata_paths):
+def test_waveform_populate_npx3B_OpenEphys(pipeline, clustering, testdata_paths):
     """
     Populate ephys.WaveformSet with OpenEphys
     Neuropixels Phase 3B (Neuropixels 1.0) probe
     """
     ephys = pipeline['ephys']
     rel_path = testdata_paths['oe_npx3B-ks']
-    curation_key = (ephys.Curation & f'curation_output_dir LIKE "%{rel_path}"'
+    curation_key = (ephys.ClusteringTask & f'clustering_output_dir LIKE "%{rel_path}"'
                     ).fetch1('KEY')
     ephys.CuratedClustering.populate(curation_key)
     ephys.WaveformSet.populate(curation_key)
@@ -137,7 +133,7 @@ def test_waveform_populate_npx3B_OpenEphys(curations, pipeline, testdata_paths):
     assert waveforms.shape == (204, 64)
 
 
-def test_waveform_populate_npx3B_SpikeGLX(curations, pipeline, testdata_paths):
+def test_waveform_populate_npx3B_SpikeGLX(pipeline, clustering, testdata_paths):
     """
     Populate ephys.WaveformSet with SpikeGLX
     Neuropixels Phase 3B (Neuropixels 1.0) probe
@@ -146,7 +142,7 @@ def test_waveform_populate_npx3B_SpikeGLX(curations, pipeline, testdata_paths):
     ephys = pipeline['ephys']
 
     rel_path = testdata_paths['npx3B-p1-ks']
-    curation_key = (ephys.Curation & f'curation_output_dir LIKE "%{rel_path}"'
+    curation_key = (ephys.ClusteringTask & f'clustering_output_dir LIKE "%{rel_path}"'
                     ).fetch1('KEY')
     ephys.CuratedClustering.populate(curation_key)
     ephys.WaveformSet.populate(curation_key)

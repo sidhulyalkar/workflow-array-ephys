@@ -1,7 +1,11 @@
 datajoint>=0.13.0
-element-array-ephys==0.1.0b0
-element-lab>=0.1.0b0
-element-animal==0.1.0b0
-element-session==0.1.0b0
+# element-array-ephys==0.1.0b0
+# element-lab>=0.1.0b0
+# element-animal==0.1.0b0
+# element-session==0.1.0b0
+element-array-ephys @ git+https://github.com/ttngu207/element-array-ephys.git@no-curation
+element-animal @ git+https://github.com/datajoint/element-animal.git
+element-lab @ git+https://github.com/datajoint/element-lab.git
+element-session @ git+https://github.com/datajoint/element-session.git
 element-interface @ git+https://github.com/datajoint/element-interface.git
 ipykernel==6.0.1

@@ -4,7 +4,7 @@ from element_lab import lab
 from element_animal import subject
 from element_session import session_with_datetime as session
 from element_array_ephys import probe
-from element_array_ephys import ephys_acute as ephys
+from element_array_ephys import ephys_no_curation as ephys
 
 from element_lab.lab import Source, Lab, Protocol, User, Project
 from element_animal.subject import Subject

@@ -1,11 +1,7 @@
 import sys
 import pathlib
 
-from . import (dj_config, pipeline, test_data,
-               subjects_csv, ingest_subjects,
-               sessions_csv, ingest_sessions,
-               testdata_paths, kilosort_paramset,
-               ephys_recordings, clustering_tasks, clustering, curations)
+from . import *
 
 # Set all to pass linter warning: PEP8 F811
 __all__ = ['dj_config', 'pipeline', 'test_data', 'subjects_csv', 'ingest_subjects',
@@ -57,6 +53,9 @@ def test_find_valid_full_path(pipeline, sessions_csv):
     docker_full_path = pathlib.Path('/main/test_data/workflow_ephys_data1/'
                                     + 'subject1/session1')
 
+    # docker_full_path = pathlib.Path('/Users/sidhulyalkar/Desktop/workflow_ephys_data/'
+    #                                 + 'subject1/session1')
+
     assert docker_full_path == session_full_path, str('Session path does not match '
                                                       + 'docker root: '
                                                       + f'{docker_full_path}')
@@ -97,6 +96,11 @@ def test_paramset_insert(kilosort_paramset, pipeline):
     method, desc, paramset_hash = (ephys.ClusteringParamSet
                                    & {'paramset_idx': 0}).fetch1(
         'clustering_method', 'paramset_desc', 'param_set_hash')
-    assert method == 'kilosort2'
-    assert desc == 'Spike sorting using Kilosort2'
-    assert dict_to_uuid(kilosort_paramset) == paramset_hash
+    assert method == 'kilosort2.5'
+    assert desc == 'Spike sorting using Kilosort2.5'
+
+    computed_paramset_hash = dict_to_uuid(
+                          {**kilosort_paramset, 
+                          'clustering_method': method})
+
+    assert computed_paramset_hash == paramset_hash

@@ -24,13 +24,15 @@ verbose = False
 pathlib.Path('./tests/user_data').mkdir(exist_ok=True)
 pathlib.Path('./tests/user_data/lab').mkdir(exist_ok=True)
 
-sessions_dirs = ['subject1/session1',
-                 'subject2/session1',
-                 'subject2/session2',
-                 'subject3/session1',
-                 'subject4/experiment1',
-                 'subject5/session1',
-                 'subject6/session1']
+# sessions_dirs = ['subject1/session1',
+#                  'subject2/session1',
+#                  'subject2/session2',
+#                  'subject3/session1',
+#                  'subject4/experiment1',
+#                  'subject5/session1',
+#                  'subject6/session1']
+
+session_dirs = ['subject1_session1']
 
 # --------------------  HELPER CLASS --------------------
 
@@ -457,7 +459,7 @@ def clustering_tasks(pipeline, kilosort_paramset, ephys_recordings):
 
     for erk_index, ephys_rec_key in enumerate((ephys.EphysRecording - ephys.ClusteringTask).fetch('KEY')):
         # split 
-        if erk_index % 2 == 0:
+        # if erk_index % 2 == 0:
             ephys_file_path = pathlib.Path(((ephys.EphysRecording.EphysFile & ephys_rec_key
                                             ).fetch('file_path'))[0])
             ephys_file = find_full_path(get_ephys_root_data_dir(), ephys_file_path)
@@ -469,18 +471,18 @@ def clustering_tasks(pipeline, kilosort_paramset, ephys_recordings):
                                         'clustering_output_dir':
                                         kilosort_dir.as_posix()
                                         }, skip_duplicates=True)
-        else:
-            ephys_file_path = pathlib.Path(((ephys.EphysRecording.EphysFile & ephys_rec_key
-                                            ).fetch('file_path'))[0])
-            ephys_file = find_full_path(get_ephys_root_data_dir(), ephys_file_path)
-            recording_dir = ephys_file.parent
-            kilosort_dir = next(recording_dir.rglob('spike_times.npy')).parent
-            ephys.ClusteringTask.insert1({**ephys_rec_key,
-                                        'paramset_idx': 0,
-                                        'task_mode': 'trigger',
-                                        'clustering_output_dir':
-                                        kilosort_dir.as_posix()
-                                        }, skip_duplicates=True)
+        # else:
+            # ephys_file_path = pathlib.Path(((ephys.EphysRecording.EphysFile & ephys_rec_key
+            #                                 ).fetch('file_path'))[0])
+            # ephys_file = find_full_path(get_ephys_root_data_dir(), ephys_file_path)
+            # recording_dir = ephys_file.parent
+            # kilosort_dir = next(recording_dir.rglob('spike_times.npy')).parent
+            # ephys.ClusteringTask.insert1({**ephys_rec_key,
+            #                             'paramset_idx': 0,
+            #                             'task_mode': 'trigger',
+            #                             'clustering_output_dir':
+            #                             kilosort_dir.as_posix()
+            #                             }, skip_duplicates=True)
     
 
     ### Need to change test suite so that kilosort will be triggered

@@ -20,19 +20,20 @@ from element_interface.utils import find_full_path
 
 _tear_down = True
 verbose = False
+kilo_trigger = True
 
 pathlib.Path('./tests/user_data').mkdir(exist_ok=True)
 pathlib.Path('./tests/user_data/lab').mkdir(exist_ok=True)
 
-# sessions_dirs = ['subject1/session1',
-#                  'subject2/session1',
-#                  'subject2/session2',
-#                  'subject3/session1',
-#                  'subject4/experiment1',
-#                  'subject5/session1',
-#                  'subject6/session1']
+sessions_dirs = ['subject1/session1',
+                 'subject2/session1',
+                 'subject2/session2',
+                 'subject3/session1',
+                 'subject4/experiment1',
+                 'subject5/session1',
+                 'subject6/session1']
 
-session_dirs = ['subject1_session1']
+# sessions_dirs = ['subject1_session1']
 
 # --------------------  HELPER CLASS --------------------
 
@@ -458,8 +459,19 @@ def clustering_tasks(pipeline, kilosort_paramset, ephys_recordings):
     ephys = pipeline['ephys']
 
     for erk_index, ephys_rec_key in enumerate((ephys.EphysRecording - ephys.ClusteringTask).fetch('KEY')):
-        # split 
-        # if erk_index % 2 == 0:
+        if kilo_trigger: 
+            ephys_file_path = pathlib.Path(((ephys.EphysRecording.EphysFile & ephys_rec_key
+                                            ).fetch('file_path'))[0])
+            ephys_file = find_full_path(get_ephys_root_data_dir(), ephys_file_path)
+            recording_dir = ephys_file.parent
+            kilosort_dir = next(recording_dir.rglob('spike_times.npy')).parent
+            ephys.ClusteringTask.insert1({**ephys_rec_key,
+                                        'paramset_idx': 0,
+                                        'task_mode': 'trigger',
+                                        'clustering_output_dir':
+                                        kilosort_dir.as_posix()
+                                        }, skip_duplicates=True)
+        else:
             ephys_file_path = pathlib.Path(((ephys.EphysRecording.EphysFile & ephys_rec_key
                                             ).fetch('file_path'))[0])
             ephys_file = find_full_path(get_ephys_root_data_dir(), ephys_file_path)
@@ -471,29 +483,6 @@ def clustering_tasks(pipeline, kilosort_paramset, ephys_recordings):
                                         'clustering_output_dir':
                                         kilosort_dir.as_posix()
                                         }, skip_duplicates=True)
-        # else:
-            # ephys_file_path = pathlib.Path(((ephys.EphysRecording.EphysFile & ephys_rec_key
-            #                                 ).fetch('file_path'))[0])
-            # ephys_file = find_full_path(get_ephys_root_data_dir(), ephys_file_path)
-            # recording_dir = ephys_file.parent
-            # kilosort_dir = next(recording_dir.rglob('spike_times.npy')).parent
-            # ephys.ClusteringTask.insert1({**ephys_rec_key,
-            #                             'paramset_idx': 0,
-            #                             'task_mode': 'trigger',
-            #                             'clustering_output_dir':
-            #                             kilosort_dir.as_posix()
-            #                             }, skip_duplicates=True)
-    
-
-    ### Need to change test suite so that kilosort will be triggered
-    # for half the test cases and curation output should be 
-    # loaded for the other half of cases - rewrite loop
-    # -- need to decide which tests should trigger and which should load
-    
-    # list = ephys_rec_key in (ephys.EphysRecording - ephys.ClusteringTask).fetch('KEY')
-    # for erk_index, ephys_rec_key in enumerate(list):
-    #     if erk_index % 2 == 0:
-            
     
     yield
 
@@ -522,22 +511,23 @@ def clustering(clustering_tasks, pipeline):
                 ephys.Clustering.delete()
 
 # Remove for ephys_no_curation testing 
-# @pytest.fixture
-# def curations(clustering, pipeline):
-    
-#     """Insert keys from ephys.ClusteringTask into ephys.Curation"""
-#     ephys = pipeline['ephys']
-    
-#     task_modes = ephys.ClusteringTask.fetch('task_mode')
+if not kilo_trigger:
+    @pytest.fixture
+    def curations(clustering, pipeline):
+        
+        """Insert keys from ephys.ClusteringTask into ephys.Curation"""
+        ephys = pipeline['ephys']
+        
+        task_modes = ephys.ClusteringTask.fetch('task_mode')
 
-#     for key in (ephys.ClusteringTask - ephys.Curation).fetch('KEY'):
-#         ephys.Curation().create1_from_clustering_task(key)
+        for key in (ephys.ClusteringTask - ephys.Curation).fetch('KEY'):
+            ephys.Curation().create1_from_clustering_task(key)
 
-#     yield
+        yield
 
-#     if _tear_down:
-#         if verbose:
-#             ephys.Curation.delete()
-#         else:
-#             with QuietStdOut():
-#                 ephys.Curation.delete()
+        if _tear_down:
+            if verbose:
+                ephys.Curation.delete()
+            else:
+                with QuietStdOut():
+                    ephys.Curation.delete()    
